@@ -6,7 +6,7 @@ import { Game, LoadingFeatures } from "../../game";
 import "./game-phase-reveal.scss";
 import { computed, action } from "mobx";
 import { GameAnswer } from "../game-answer";
-import { Button } from "semantic-ui-react";
+import { Button, Label } from "semantic-ui-react";
 
 export interface GamePhaseRevealProps {
     className?: string;
@@ -46,13 +46,23 @@ export class GamePhaseReveal extends React.Component<GamePhaseRevealProps> {
                             <GameAnswer key={answer.answerId} answerId={answer.answerId} reveal />
                         ))}
                 </div>
-                <Button
-                    onClick={this.handleDone}
-                    disabled={this.disabled || this.loading}
-                    loading={this.loading}
-                    content="Okay"
-                    icon="check"
-                />
+                <div className="GamePhaseReveal__accept">
+                    <Button as="div" labelPosition="right">
+                        <Button
+                            onClick={this.handleDone}
+                            className="GamePhaseScoring__button"
+                            primary
+                            fluid
+                            disabled={this.disabled || this.loading}
+                            loading={this.loading}
+                            content="Okay"
+                            icon="check"
+                        />
+                        <Label basic pointing="left">
+                            {this.game.userList.length - this.game.doneReading.size} missing
+                        </Label>
+                    </Button>
+                </div>
             </div>
         );
     }

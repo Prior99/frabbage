@@ -57,17 +57,21 @@ export class GamePhaseSelectAnswer extends React.Component<GamePhaseSelectAnswer
                         .sort((a, b) => a.answerId.localeCompare(b.answerId))
                         .map((answer) => (
                             <GameAnswer
+                                className="GamePhaseSelectAnswer__answer"
                                 key={answer.answerId}
                                 answerId={answer.answerId}
                                 onClick={
-                                    this.canSelect && !this.game.selectedAnswers.has(this.game.userId)
+                                    answer.userId !== this.game.userId &&
+                                    this.canSelect &&
+                                    !this.game.selectedAnswers.has(this.game.userId)
                                         ? this.handleAnswerSelect
                                         : undefined
                                 }
                                 selected={this.game.selectedAnswers.get(this.game.userId) === answer.answerId}
                                 disabled={
-                                    this.game.selectedAnswers.has(this.game.userId) &&
-                                    this.game.selectedAnswers.get(this.game.userId) !== answer.answerId
+                                    (!this.game.isQuestionMaster && answer.userId === this.game.userId) ||
+                                    (this.game.selectedAnswers.has(this.game.userId) &&
+                                        this.game.selectedAnswers.get(this.game.userId) !== answer.answerId)
                                 }
                             />
                         ))}

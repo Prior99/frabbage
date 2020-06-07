@@ -1,19 +1,54 @@
 @import "../../variables.scss";
 
 .GameAnswer {
-    text-align: center;
     transition: all ease 0.5s;
     display: flex;
+    margin: 0 !important;
 
     &__title {
         font-size: 16pt !important;
         text-transform: uppercase;
         line-height: 1.2em;
-        flex-grow: 1;
         display: flex;
         align-items: center;
         justify-content: center;
         position: relative;
+        text-align: center;
+    }
+
+    &__points {
+        color: #21ba45!important;
+        font-style: italic;
+        font-weight: bold;
+        margin-left: 10px;
+        opacity: 0.6;
+    }
+
+    &__reveal {
+        flex-grow: 1;
+    }
+
+    &__meta:not(:first-child) {
+        margin-top: #{$gutter / 2};
+    }
+
+    &__revealTitle {
+        opacity: 0.5;
+        font-size: 0.9rem;
+    }
+
+    &__foolList {
+        margin-top: 0;
+        padding-left: 0;
+        list-style-type: none;
+        > li {
+            margin-left: 0;
+
+            &::before {
+                content: "-";
+                padding-right: 5px;
+            }
+        }
     }
 
     &--clickable {

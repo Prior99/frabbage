@@ -344,12 +344,28 @@ export class Game {
                     this.audios.play(audioAnswerAddOther);
                 }
             }
-            if (this.allRiddlers.every(({ id }) => this.doneReading.has(id))) {
+            if (this.userList.every(({ id }) => this.doneReading.has(id))) {
+                this.selectedAnswers.forEach((answerId, userId) => {
+                    const answer = this.answers.get(answerId);
+                    if (answer?.userId === this.questionMaster?.id) {
+                        this.userStates.get(userId)!.score += 20;
+                    } else {
+                        this.userStates.get(answer!.userId)!.score += 10;
+                    }
+                });
+                if (
+                    !Array.from(this.selectedAnswers.values()).includes(
+                        Array.from(this.answers.values()).find((answer) => this.questionMaster!.id === answer.userId)!
+                            .answerId,
+                    )
+                ) {
+                    this.userStates.get(this.questionMaster!.id)!.score += 20;
+                }
                 this.nextPhase(GamePhase.SCORES);
             }
         });
         this.messageStartGame.subscribe(({ config }) => {
-            this.audios.play(audioNextPhase);
+            this.audios.play(audioQuestionDone);
             this.config = config;
             const rng = randomSeed(config.seed);
             this.turnOrder = shuffle(

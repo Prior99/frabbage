@@ -11,4 +11,12 @@
     &__form {
         width: 500px !important;
     }
+
+    &__answers {
+        @include answerGrid;
+    }
+
+    &__answer {
+        height: 100%;
+    }
 }
