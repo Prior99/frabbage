@@ -63,9 +63,9 @@ export class GamePhaseReveal extends React.Component<GamePhaseRevealProps> {
                                         <Message.Content style={{ textAlign: "right" }}>
                                             {this.game.getUser(userId)?.name}
                                             {correct ? (
-                                                <span className="GameAnswer__points">+20</span>
+                                                <span className="GamePhaseReveal__points">+20</span>
                                             ) : (
-                                                <span className="GameAnswer__points GameAnswer__points--wrong">
+                                                <span className="GamePhaseReveal__points GamePhaseReveal__points--wrong">
                                                     -20
                                                 </span>
                                             )}
