@@ -1,5 +1,5 @@
 import { GameConfig } from "./game-config";
-import { UserState, Answer } from "../game";
+import { UserState, Answer, CorrectAnswerOutcome } from "../game";
 import { GamePhase } from "./game-phase";
 
 export const enum MessageType {
@@ -9,7 +9,13 @@ export const enum MessageType {
     ANSWER = "answer",
     SELECT_ANSWER = "select answer",
     DONE_READING = "done reading",
-    NEXT_ROUND = "next round"
+    NEXT_ROUND = "next round",
+    SET_CORRECT_ANSWER_OUTCOME = "set correct answer outcome",
+}
+
+export interface MessageSetCorrectAnswerOutcome {
+    userId: string;
+    outcome: CorrectAnswerOutcome;
 }
 
 export interface MessageGameState {
@@ -20,6 +26,8 @@ export interface MessageGameState {
     turnOrder: string[];
     answers: [string, Answer][];
     selectedAnswers: [string, string][];
+    correctAnswers: [string, string][];
+    correctAnswerOutcomes: [string, CorrectAnswerOutcome][];
     doneReading: string[];
     question: string | undefined;
 }
@@ -35,14 +43,13 @@ export interface MessageQuestion {
 export interface MessageAnswer {
     title: string;
     answerId: string;
+    correctAnswer: string | undefined;
 }
 
 export interface MessageSelectAnswer {
     answerId: string;
 }
 
-export interface MessageDoneReading {
-}
+export interface MessageDoneReading {}
 
-export interface MessageNextRound {
-}
+export interface MessageNextRound {}

@@ -16,11 +16,16 @@ export interface GamePhaseWriteAnswersProps {
 export class GamePhaseWriteAnswers extends React.Component<GamePhaseWriteAnswersProps> {
     @inject private game!: Game;
     @observable private title = "";
+    @observable private correctAnswer = "";
 
     @computed private get classNames(): string {
         return classNames(this.props.className, "GamePhaseWriteAnswers", {
             "GamePhaseWriteAnswers--questionMaster": this.game.isQuestionMaster,
         });
+    }
+
+    @action.bound private handleCorrectAnswerChange(evt: React.SyntheticEvent<HTMLInputElement>): void {
+        this.correctAnswer = evt.currentTarget.value;
     }
 
     @action.bound private handleTitleChange(evt: React.SyntheticEvent<HTMLInputElement>): void {
@@ -29,8 +34,8 @@ export class GamePhaseWriteAnswers extends React.Component<GamePhaseWriteAnswers
 
     @action.bound private async handleSubmit(evt: React.SyntheticEvent<HTMLFormElement>): Promise<void> {
         evt.preventDefault();
-        const { title } = this;
-        await this.game.sendAnswer(title);
+        const { title, correctAnswer } = this;
+        await this.game.sendAnswer(title, correctAnswer ? correctAnswer : undefined);
         this.title = "";
     }
 
@@ -44,12 +49,13 @@ export class GamePhaseWriteAnswers extends React.Component<GamePhaseWriteAnswers
 
     @computed private get instructions(): JSX.Element {
         if (this.game.submittedAnswer) {
-            return <>Waiting for {this.game.missingAnswerUsers.map((user) => user.name).join(", ")}...</>;
+            return (
+                <div className="GamePhaseWriteAnswers__question">
+                    Waiting for {this.game.missingAnswerUsers.map((user) => user.name).join(", ")}...
+                </div>
+            );
         }
-        if (this.game.isQuestionMaster) {
-            return <>Write the correct answer.</>;
-        }
-        return <>{this.game.question}</>;
+        return <div className="GamePhaseWriteAnswers__question">{this.game.question}</div>;
     }
 
     public render(): JSX.Element {
@@ -59,6 +65,9 @@ export class GamePhaseWriteAnswers extends React.Component<GamePhaseWriteAnswers
                     <div className="GamePhaseWriteAnswers__instructions">{this.instructions}</div>
                     <Form className="GamePhaseWriteAnswers__form" onSubmit={this.handleSubmit}>
                         <Form.Field>
+                            <label>
+                                {this.game.isQuestionMaster ? "Write the correct answer." : "Write a made-up answer."}
+                            </label>
                             <Form.Input
                                 disabled={this.disabled}
                                 value={this.title}
@@ -66,6 +75,19 @@ export class GamePhaseWriteAnswers extends React.Component<GamePhaseWriteAnswers
                                 inverted
                             />
                         </Form.Field>
+                        {!this.game.isQuestionMaster && (
+                            <>
+                                <Form.Field>
+                                    <label>If you happen to really know the correct answer, enter it below.</label>
+                                    <Form.Input
+                                        disabled={this.disabled}
+                                        value={this.correctAnswer}
+                                        onChange={this.handleCorrectAnswerChange}
+                                        inverted
+                                    />
+                                </Form.Field>
+                            </>
+                        )}
                         <Form.Field>
                             <Form.Button
                                 disabled={this.disabled || this.title.length === 0}

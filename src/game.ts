@@ -16,6 +16,7 @@ import {
     MessageSelectAnswer,
     MessageDoneReading,
     MessageNextRound,
+    MessageSetCorrectAnswerOutcome,
 } from "./types";
 import { v4 } from "uuid";
 import { shuffle } from "./utils";
@@ -44,6 +45,7 @@ export const enum LoadingFeatures {
     ANSWER = "answer",
     SELECT_ANSWER = "select answer",
     DONE_READING = "done reading",
+    CORRECT_ANSWER_OUTCOME = "correct answer outcome",
 }
 
 export interface UserState {
@@ -54,6 +56,11 @@ export interface Answer {
     answerId: string;
     title: string;
     userId: string;
+}
+
+export const enum CorrectAnswerOutcome {
+    CORRECT = "correct",
+    WRONG = "wrong",
 }
 
 @component
@@ -72,6 +79,8 @@ export class Game {
     @observable public selectedAnswers = new Map<string, string>();
     @observable public doneReading = new Set<string>();
     @observable public question?: string;
+    @observable public correctAnswers = new Map<string, string>();
+    @observable public correctAnswerOutcomes = new Map<string, CorrectAnswerOutcome>();
 
     private messageGameState?: MessageFactory<MessageType, MessageGameState>;
     private messageStartGame?: MessageFactory<MessageType, MessageStartGame>;
@@ -80,6 +89,7 @@ export class Game {
     private messageSelectAnswer?: MessageFactory<MessageType, MessageSelectAnswer>;
     private messageDoneReading?: MessageFactory<MessageType, MessageDoneReading>;
     private messageNextRound?: MessageFactory<MessageType, MessageNextRound>;
+    private messageCorrectAnswerOutcome?: MessageFactory<MessageType, MessageSetCorrectAnswerOutcome>;
 
     @computed public get userName(): string {
         console.log(this.peer?.disconnectedUsers);
@@ -149,6 +159,18 @@ export class Game {
         }
     }
 
+    public async sendCorrectAnswerOutcome(userId: string, outcome: CorrectAnswerOutcome): Promise<void> {
+        if (!this.messageCorrectAnswerOutcome) {
+            throw new Error("Network not initialized.");
+        }
+        this.loading.add(LoadingFeatures.CORRECT_ANSWER_OUTCOME);
+        try {
+            await this.messageCorrectAnswerOutcome.send({ userId, outcome }).waitForAll();
+        } finally {
+            this.loading.delete(LoadingFeatures.CORRECT_ANSWER_OUTCOME);
+        }
+    }
+
     public async sendQuestion(question: string): Promise<void> {
         if (!this.messageQuestion) {
             throw new Error("Network not initialized.");
@@ -161,13 +183,13 @@ export class Game {
         }
     }
 
-    public async sendAnswer(title: string): Promise<void> {
+    public async sendAnswer(title: string, correctAnswer: string | undefined): Promise<void> {
         if (!this.messageAnswer) {
             throw new Error("Network not initialized.");
         }
         this.loading.add(LoadingFeatures.ANSWER);
         try {
-            await this.messageAnswer.send({ title, answerId: v4() }).waitForAll();
+            await this.messageAnswer.send({ title, answerId: v4(), correctAnswer }).waitForAll();
         } finally {
             this.loading.delete(LoadingFeatures.ANSWER);
         }
@@ -231,7 +253,7 @@ export class Game {
     }
 
     @computed public get missingAnswerUsers(): AppUser[] {
-        return this.allRiddlers.filter((user) => !this.finishedAnswerUsers.some((other) => other.id === user.id));
+        return this.userList.filter((user) => !this.finishedAnswerUsers.some((other) => other.id === user.id));
     }
 
     @action.bound private startTurn(): void {
@@ -246,6 +268,8 @@ export class Game {
             this.selectedAnswers.clear();
             this.doneReading.clear();
             this.answers.clear();
+            this.correctAnswers.clear();
+            this.correctAnswerOutcomes.clear();
         }
         if (!this.peer) {
             throw new Error("Network not initialized.");
@@ -258,6 +282,15 @@ export class Game {
             this.audios.play(audioQuestionDone);
         }
         this.phase = phase;
+    }
+
+    private checkGoToReveal(): void {
+        if (
+            this.allRiddlers.every(({ id }) => this.selectedAnswers.has(id)) &&
+            Array.from(this.correctAnswers.keys()).every((userId) => this.correctAnswerOutcomes.has(userId))
+        ) {
+            this.nextPhase(GamePhase.REVEAL);
+        }
     }
 
     @action.bound public async initialize(networkId?: string, userId?: string): Promise<void> {
@@ -284,10 +317,31 @@ export class Game {
         this.messageSelectAnswer = this.peer.message<MessageSelectAnswer>(MessageType.SELECT_ANSWER);
         this.messageDoneReading = this.peer.message<MessageDoneReading>(MessageType.DONE_READING);
         this.messageNextRound = this.peer.message<MessageNextRound>(MessageType.NEXT_ROUND);
+        this.messageCorrectAnswerOutcome = this.peer.message<MessageSetCorrectAnswerOutcome>(
+            MessageType.SET_CORRECT_ANSWER_OUTCOME,
+        );
 
+        this.messageCorrectAnswerOutcome.subscribe(
+            action(({ userId, outcome }) => {
+                this.correctAnswerOutcomes.set(userId, outcome);
+                this.checkGoToReveal();
+            }),
+        );
         this.messageGameState?.subscribe(
             action(
-                ({ config, userStates, phase, round, turnOrder, answers, selectedAnswers, doneReading, question }) => {
+                ({
+                    config,
+                    userStates,
+                    phase,
+                    round,
+                    turnOrder,
+                    correctAnswerOutcomes,
+                    answers,
+                    selectedAnswers,
+                    correctAnswers,
+                    doneReading,
+                    question,
+                }) => {
                     this.config = config;
                     this.userStates = new Map(userStates);
                     this.phase = phase;
@@ -296,12 +350,17 @@ export class Game {
                     this.answers = new Map(answers);
                     this.selectedAnswers = new Map(selectedAnswers);
                     this.doneReading = new Set(doneReading);
+                    this.correctAnswers = new Map(correctAnswers);
                     this.question = question;
+                    this.correctAnswerOutcomes = new Map(correctAnswerOutcomes);
                 },
             ),
         );
-        this.messageAnswer.subscribe(({ title, answerId }, userId) => {
+        this.messageAnswer.subscribe(({ title, answerId, correctAnswer }, userId) => {
             this.answers.set(answerId, { title, answerId, userId });
+            if (correctAnswer) {
+                this.correctAnswers.set(userId, correctAnswer);
+            }
             if (
                 !this.userList.every(({ id }) =>
                     Array.from(this.answers.values()).some((answer) => answer.userId === id),
@@ -323,15 +382,12 @@ export class Game {
         });
         this.messageSelectAnswer.subscribe(({ answerId }, userId) => {
             this.selectedAnswers.set(userId, answerId);
-            if (this.allRiddlers.every(({ id }) => this.selectedAnswers.has(id))) {
-                this.nextPhase(GamePhase.REVEAL);
+            if (this.userId === userId) {
+                this.audios.play(audioAnswerAddSelf);
             } else {
-                if (this.userId === userId) {
-                    this.audios.play(audioAnswerAddSelf);
-                } else {
-                    this.audios.play(audioAnswerAddOther);
-                }
+                this.audios.play(audioAnswerAddOther);
             }
+            this.checkGoToReveal();
         });
         this.messageDoneReading.subscribe((_, userId) => {
             this.doneReading.add(userId);
@@ -393,6 +449,8 @@ export class Game {
                     phase: this.phase,
                     doneReading: Array.from(this.doneReading.values()),
                     question: this.question,
+                    correctAnswers: Array.from(this.correctAnswers),
+                    correctAnswerOutcomes: Array.from(this.correctAnswerOutcomes),
                 },
                 user.id,
             );

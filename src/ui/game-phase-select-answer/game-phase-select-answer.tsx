@@ -2,10 +2,11 @@ import * as React from "react";
 import classNames from "classnames";
 import { observer } from "mobx-react";
 import { external, inject } from "tsdi";
-import { Game, LoadingFeatures } from "../../game";
+import { Game, LoadingFeatures, CorrectAnswerOutcome } from "../../game";
 import "./game-phase-select-answer.scss";
 import { computed, observable, action } from "mobx";
 import { GameAnswer } from "../game-answer";
+import { Message, Icon, Button } from "semantic-ui-react";
 
 export interface GamePhaseSelectAnswerProps {
     className?: string;
@@ -76,6 +77,47 @@ export class GamePhaseSelectAnswer extends React.Component<GamePhaseSelectAnswer
                             />
                         ))}
                 </div>
+                {this.game.isQuestionMaster && this.game.correctAnswers.size - this.game.correctAnswerOutcomes.size > 0 && (
+                    <div className="GamePhaseSelectAnswer__correctAnswers">
+                        <div className="GamePhaseSelectAnswer__correctAnswerInstructions">
+                            Are these answers correct?
+                        </div>
+                        {Array.from(this.game.correctAnswers.entries())
+                            .filter(([userId]) => !this.game.correctAnswerOutcomes.has(userId))
+                            .map(([userId, correctAnswer]) => (
+                                <Message icon key={userId}>
+                                    <Icon name="question circle" />
+                                    <Message.Content>
+                                        {correctAnswer}
+                                    </Message.Content>
+                                    <Message.Content style={{ textAlign: "right" }}>
+                                        <Button
+                                            disabled={this.game.loading.has(LoadingFeatures.CORRECT_ANSWER_OUTCOME)}
+                                            loading={this.game.loading.has(LoadingFeatures.CORRECT_ANSWER_OUTCOME)}
+                                            basic
+                                            content="Wrong"
+                                            icon="ban"
+                                            color="red"
+                                            onClick={() =>
+                                                this.game.sendCorrectAnswerOutcome(userId, CorrectAnswerOutcome.WRONG)
+                                            }
+                                        />
+                                        <Button
+                                            disabled={this.game.loading.has(LoadingFeatures.CORRECT_ANSWER_OUTCOME)}
+                                            loading={this.game.loading.has(LoadingFeatures.CORRECT_ANSWER_OUTCOME)}
+                                            icon="check"
+                                            color="green"
+                                            onClick={() =>
+                                                this.game.sendCorrectAnswerOutcome(userId, CorrectAnswerOutcome.CORRECT)
+                                            }
+                                            basic
+                                            content="Correct"
+                                        />
+                                    </Message.Content>
+                                </Message>
+                            ))}
+                    </div>
+                )}
             </div>
         );
     }

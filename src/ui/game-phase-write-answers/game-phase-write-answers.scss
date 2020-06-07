@@ -4,12 +4,23 @@
     @include container;
     background-color: #f2711c;
 
+    &__correctAnswer {
+        @include instruction;
+        color: #fff;
+    }
+
     &__instructions {
         @include instruction;
         color: #fff;
     }
 
     &__form {
-        width: 500px !important;
+        .field {
+            width: 500px !important;
+
+            > label {
+                color: #fff !important;
+            }
+        }
     }
 }
