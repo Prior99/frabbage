@@ -1,0 +1,15 @@
+@import "../../variables.scss";
+
+.GamePhaseWriteAnswers {
+    @include container;
+    background-color: #f2711c;
+
+    &__instructions {
+        @include instruction;
+        color: #fff;
+    }
+
+    &__form {
+        width: 500px !important;
+    }
+}

@@ -1,0 +1,16 @@
+{
+  "short_name": "Frabbage",
+  "name": "Frabbage",
+  "icons": [
+    {
+      "src": "dist/logo.png",
+      "type": "image/png",
+      "sizes": "200x200"
+    }
+  ],
+  "start_url": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "theme_color": "#fff6ba"
+}
+

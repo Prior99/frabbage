@@ -1,0 +1,14 @@
+@import "../../variables.scss";
+
+.GamePhaseReveal {
+    @include container;
+
+    &__instructions {
+        @include instruction;
+        color: #fff;
+    }
+
+    &__form {
+        width: 500px !important;
+    }
+}

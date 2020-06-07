@@ -1,0 +1,44 @@
+@import "../../variables.scss";
+
+.GameAnswer {
+    text-align: center;
+    transition: all ease 0.5s;
+    display: flex;
+
+    &__title {
+        font-size: 16pt !important;
+        text-transform: uppercase;
+        line-height: 1.2em;
+        flex-grow: 1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        position: relative;
+    }
+
+    &--clickable {
+        cursor: pointer;
+
+        &:hover {
+            transform: scale(1.2);
+            z-index: 10;
+        }
+    }
+
+    &--disabled {
+        opacity: 0.5;
+    }
+
+    &--selected {
+        transform: scale(1.2);
+        z-index: 10;
+    }
+
+    &__myIcon {
+        color: white;
+        position: absolute;
+        z-index: 10;
+        top: 5px;
+        left: 5px;
+    }
+}

@@ -1,0 +1,49 @@
+.PageMainMenu {
+    height: 100%;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+
+    &__menuContainer {
+        display: flex;
+        align-items: center;
+        flex-direction: column;
+    }
+
+    &__header {
+        display: flex;
+        align-items: flex-end;
+    }
+
+    &__name {
+        margin-bottom: 0;
+        padding-bottom: 0;
+    }
+
+    &__logo {
+        height: 3em;
+        width: 3em;
+        padding-bottom: 8px;
+        margin-right: 10px;
+        border-radius: 5px;
+        background-image: url(../../../assets/logo.png);
+        background-size: cover;
+    }
+
+    &__tab {
+        margin-bottom: 10px;
+    }
+
+    &__segment {
+        margin-top: 5px;
+        width: 300px;
+    }
+
+    &__version {
+        opacity: 0.5;
+        width: 300px;
+        text-align: right;
+        padding-right: 1em;
+        font-style: italic;
+    }
+}

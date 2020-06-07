@@ -1,0 +1,43 @@
+image: node:12
+
+stages:
+  - build
+  - deploy
+
+cache:
+  paths:
+    - node_modules/
+
+build:
+  stage: build
+  before_script:
+    - yarn
+  script:
+    - yarn build
+  artifacts:
+    paths:
+      - dist/
+      - assets/
+      - manifest.json
+      - index.html
+
+lint:
+  stage: build
+  before_script:
+    - yarn
+  script:
+    - yarn lint
+
+pages:
+  stage: deploy
+  script:
+    - mkdir public
+    - mv dist index.html assets manifest.json public/
+  dependencies:
+    - build
+  artifacts:
+    paths:
+      - public
+  only:
+    - master
+  when: manual

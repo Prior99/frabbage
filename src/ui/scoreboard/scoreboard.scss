@@ -1,0 +1,17 @@
+@import "../../variables.scss";
+
+.Scoreboard {
+    $rankWidth: 10px;
+
+    &__rankHeader {
+        width: $rankWidth;
+    }
+
+    &__rankCell {
+        width: $rankWidth;
+    }
+
+    &__scoreCell {
+        font-weight: bold;
+    }
+}
