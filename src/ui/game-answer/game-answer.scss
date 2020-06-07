@@ -17,7 +17,12 @@
     }
 
     &__points {
-        color: #21ba45!important;
+        &--wrong {
+            color: #db2828 !important;
+        }
+
+        display: inline-block;
+        color: #21ba45 !important;
         font-style: italic;
         font-weight: bold;
         margin-left: 10px;

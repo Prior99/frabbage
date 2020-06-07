@@ -19,7 +19,15 @@ $gutter: 20px;
 
 @mixin answerGrid {
     display: grid;
-    grid-template-columns: repeat(2, 1fr);
+
+    @media (orientation: landscape) {
+        grid-template-columns: repeat(3, 1fr);
+    }
+
+    @media (orientation: portrait) {
+        grid-template-columns: repeat(1, 1fr);
+    }
+
     grid-auto-rows: 1fr;
     grid-column-gap: $gutter;
     grid-row-gap: $gutter;

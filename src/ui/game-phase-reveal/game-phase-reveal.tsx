@@ -2,11 +2,11 @@ import * as React from "react";
 import classNames from "classnames";
 import { observer } from "mobx-react";
 import { external, inject } from "tsdi";
-import { Game, LoadingFeatures } from "../../game";
+import { Game, LoadingFeatures, CorrectAnswerOutcome } from "../../game";
 import "./game-phase-reveal.scss";
 import { computed, action } from "mobx";
 import { GameAnswer } from "../game-answer";
-import { Button, Label } from "semantic-ui-react";
+import { Button, Label, Message, Icon } from "semantic-ui-react";
 
 export interface GamePhaseRevealProps {
     className?: string;
@@ -39,6 +39,7 @@ export class GamePhaseReveal extends React.Component<GamePhaseRevealProps> {
     public render(): JSX.Element {
         return (
             <div className={this.classNames}>
+                <div className="GamePhaseReveal__instructions">Outcome:</div>
                 <div className="GamePhaseReveal__answers">
                     {Array.from(this.game.answers.values())
                         .sort((a, b) => a.answerId.localeCompare(b.answerId))
@@ -46,6 +47,35 @@ export class GamePhaseReveal extends React.Component<GamePhaseRevealProps> {
                             <GameAnswer key={answer.answerId} answerId={answer.answerId} reveal />
                         ))}
                 </div>
+                {this.game.correctAnswers.size > 0 && (
+                    <>
+                        <div className="GamePhaseReveal__correctAnswerInstructions">
+                            These players tryed to guess the answer directly:
+                        </div>
+                        <div className="GamePhaseReveal__correctAnswers">
+                            {Array.from(this.game.correctAnswers.entries()).map(([userId, correctAnswer]) => {
+                                const correct =
+                                    this.game.correctAnswerOutcomes.get(userId)! === CorrectAnswerOutcome.CORRECT;
+                                return (
+                                    <Message icon key={userId} color={correct ? "green" : "red"}>
+                                        <Icon name={correct ? "check" : "ban"} />
+                                        <Message.Content>{correctAnswer}</Message.Content>
+                                        <Message.Content style={{ textAlign: "right" }}>
+                                            {this.game.getUser(userId)?.name}
+                                            {correct ? (
+                                                <span className="GameAnswer__points">+20</span>
+                                            ) : (
+                                                <span className="GameAnswer__points GameAnswer__points--wrong">
+                                                    -20
+                                                </span>
+                                            )}
+                                        </Message.Content>
+                                    </Message>
+                                );
+                            })}
+                        </div>
+                    </>
+                )}
                 <div className="GamePhaseReveal__accept">
                     <Button as="div" labelPosition="right">
                         <Button

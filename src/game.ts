@@ -417,6 +417,13 @@ export class Game {
                 ) {
                     this.userStates.get(this.questionMaster!.id)!.score += 20;
                 }
+                this.correctAnswerOutcomes.forEach((outcome, userId) => {
+                    if (outcome === CorrectAnswerOutcome.CORRECT) {
+                        this.userStates.get(userId)!.score += 20;
+                    } else {
+                        this.userStates.get(userId)!.score -= 20;
+                    }
+                })
                 this.nextPhase(GamePhase.SCORES);
             }
         });

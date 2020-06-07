@@ -7,19 +7,20 @@
         @include instruction;
     }
 
-    &__form {
-        width: 500px !important;
-    }
-
     &__answers {
         @include answerGrid;
     }
 
     &__correctAnswerInstructions {
         @include instruction;
+        text-align: center;
     }
 
     &__correctAnswers {
+        margin-top: $gutter;
+        width: 80%;
+        padding: $gutter;
+
         .message {
             min-width: 30vw;
         }

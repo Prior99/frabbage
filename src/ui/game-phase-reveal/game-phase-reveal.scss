@@ -5,7 +5,7 @@
 
     &__instructions {
         @include instruction;
-        color: #fff;
+        margin-top: $gutter;
     }
 
     &__answers {
@@ -13,6 +13,19 @@
     }
 
     &__accept {
+        margin: $gutter 0;
+    }
+
+    &__correctAnswers {
+        @include answerGrid;
+
+        > div {
+            margin: 0 !important;
+        }
+    }
+
+    &__correctAnswerInstructions {
+        @include instruction;
         margin-top: $gutter;
     }
 }

@@ -37,6 +37,7 @@ export class GamePhaseWriteAnswers extends React.Component<GamePhaseWriteAnswers
         const { title, correctAnswer } = this;
         await this.game.sendAnswer(title, correctAnswer ? correctAnswer : undefined);
         this.title = "";
+        this.correctAnswer = "";
     }
 
     @computed private get disabled(): boolean {
